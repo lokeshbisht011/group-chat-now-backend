@@ -1,18 +1,13 @@
-import { Server, Socket } from 'socket.io';
-import { RoomManager } from '../managers/RoomManager';
-import { v4 as uuidv4 } from 'uuid';
-import { MessageManager } from '../managers/MessageManager';
-
 export function socketHandler(
-  io: Server,
-  messageManager: MessageManager,
-  roomManager: RoomManager
+  io,
+  messageManager,
+  roomManager
 ) {
-  io.on('connection', (socket: Socket) => {
+  io.on('connection', (socket) => {
     console.log(`🔌 Client connected: ${socket.id}`);
     
-    let currentRoomId: string | null = null;
-    let currentUserId: string | null = null;
+    let currentRoomId = null;
+    let currentUserId = null;
 
     // Join room
     socket.on('join-room', async (data) => {
@@ -27,7 +22,7 @@ export function socketHandler(
         }
 
         // Use the persistent userId provided by the client
-        const persistentUserId: string = userId; 
+        const persistentUserId = userId; 
         
         // Leave current room if any (using the persistent ID)
         if (currentRoomId && currentUserId) {
@@ -60,9 +55,9 @@ export function socketHandler(
           userId: currentUserId,
           user: result.user,
           room: {
-            id: result.room!.id,
-            name: result.room!.name,
-            code: result.room!.code
+            id: result.room.id,
+            name: result.room.name,
+            code: result.room.code
           },
           messages,
           users: roomManager.getRoomUsers(roomId)

@@ -1,23 +1,17 @@
-import { Message, Reaction } from '../types';
 import { v4 as uuidv4 } from 'uuid';
 
 export class MessageManager {
-  private messages: Map<string, Message[]> = new Map();
-  private cleanupInterval?: NodeJS.Timeout;
-  private readonly EXPIRY_MINUTES = parseInt(process.env.MESSAGE_EXPIRY_MINUTES || '5');
+  constructor() {
+    this.messages = new Map();
+    this.cleanupInterval = undefined;
+    this.EXPIRY_MINUTES = parseInt(process.env.MESSAGE_EXPIRY_MINUTES || '5');
+  }
 
-  createMessage(
-    roomId: string,
-    userId: string,
-    username: string,
-    content: string,
-    avatar: { color: string; initials: string },
-    replyTo?: string
-  ): Message {
+  createMessage(roomId, userId, username, content, avatar, replyTo) {
     const now = new Date();
     const expiresAt = new Date(now.getTime() + this.EXPIRY_MINUTES * 60 * 1000);
 
-    const message: Message = {
+    const message = {
       id: uuidv4(),
       roomId,
       userId,
@@ -34,11 +28,11 @@ export class MessageManager {
       this.messages.set(roomId, []);
     }
 
-    this.messages.get(roomId)!.push(message);
+    this.messages.get(roomId).push(message);
     return message;
   }
 
-  addReaction(roomId: string, messageId: string, emoji: string, userId: string, username: string): boolean {
+  addReaction(roomId, messageId, emoji, userId, username) {
     const roomMessages = this.messages.get(roomId);
     if (!roomMessages) return false;
 
@@ -56,7 +50,7 @@ export class MessageManager {
       // Remove reaction
       reaction.users = reaction.users.filter(u => u.id !== userId);
       reaction.count = reaction.users.length;
-      
+
       if (reaction.count === 0) {
         message.reactions = message.reactions.filter(r => r.emoji !== emoji);
       }
@@ -69,23 +63,23 @@ export class MessageManager {
     return true;
   }
 
-  getRoomMessages(roomId: string): Message[] {
+  getRoomMessages(roomId) {
     return this.messages.get(roomId) || [];
   }
 
-  getMessageById(roomId: string, messageId: string): Message | undefined {
+  getMessageById(roomId, messageId) {
     const roomMessages = this.messages.get(roomId);
     return roomMessages?.find(m => m.id === messageId);
   }
 
-  cleanupExpiredMessages(): number {
+  cleanupExpiredMessages() {
     const now = new Date();
     let totalCleaned = 0;
 
     for (const [roomId, messages] of this.messages.entries()) {
       const initialCount = messages.length;
       const validMessages = messages.filter(m => m.expiresAt > now);
-      
+
       this.messages.set(roomId, validMessages);
       totalCleaned += initialCount - validMessages.length;
     }
@@ -93,7 +87,7 @@ export class MessageManager {
     return totalCleaned;
   }
 
-  startCleanupInterval(): void {
+  startCleanupInterval() {
     // Run cleanup every minute
     this.cleanupInterval = setInterval(() => {
       const cleaned = this.cleanupExpiredMessages();
@@ -103,14 +97,14 @@ export class MessageManager {
     }, 60 * 1000);
   }
 
-  stopCleanupInterval(): void {
+  stopCleanupInterval() {
     if (this.cleanupInterval) {
       clearInterval(this.cleanupInterval);
       this.cleanupInterval = undefined;
     }
   }
 
-  clearRoomMessages(roomId: string): void {
+  clearRoomMessages(roomId) {
     this.messages.delete(roomId);
   }
 }

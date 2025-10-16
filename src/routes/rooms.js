@@ -1,7 +1,6 @@
 import { Router } from 'express';
-import { RoomManager } from '../managers/RoomManager';
 
-export function roomRoutes(roomManager: RoomManager) {
+export function roomRoutes(roomManager) {
   const router = Router();
 
   router.post('/', (req, res) => {

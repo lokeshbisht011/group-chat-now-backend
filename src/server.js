@@ -3,10 +3,10 @@ import { createServer } from 'http';
 import { Server } from 'socket.io';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import { roomRoutes } from './routes/rooms';
-import { socketHandler } from './sockets/socketHandler';
-import { MessageManager } from './managers/MessageManager';
-import { RoomManager } from './managers/RoomManager';
+import { roomRoutes } from './routes/rooms.js';
+import { socketHandler } from './sockets/socketHandler.js';
+import { MessageManager } from './managers/MessageManager.js';
+import { RoomManager } from './managers/RoomManager.js';
 
 dotenv.config();
 
